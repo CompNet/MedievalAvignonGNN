@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 
 
-def gen(nb_nodes: int, density: float, attr_min: float, attr_max: float) -> nx.DiGraph:
+def gen(nb_nodes: int, density: float) -> nx.DiGraph:
     """
         nb_nodes: Nombre de noeuds du graphe.
         density: Proportion de liens présents par rapport à un graphe complet.
@@ -23,13 +23,13 @@ def gen(nb_nodes: int, density: float, attr_min: float, attr_max: float) -> nx.D
     # Dégradation: réduction de densité
     tbr = random.sample(
         tuple(G.edges()), 
-        int(nx.number_of_edges(G) * (1 - p.density))
+        int(nx.number_of_edges(G) * (1 - density))
     )
     G.remove_edges_from(tbr)
 
     # Attributs
     for node in G.nodes():
-        G.nodes[node]['pos'] = np.random.uniform(p.min, p.max, 2).tolist()
+        G.nodes[node]['pos'] = np.random.uniform(0.0, 1.0, 2).tolist()
 
     for edge in G.edges():
         dir = ''
@@ -81,6 +81,11 @@ def save(G: nx.Graph, filename: str) -> None:
 def display(G: nx.Graph) -> None:
     """
         Afficher le graphe avec pyplot.
+        Les arcs sont colorés selon leurs attributs:
+            - Nord : vert
+            - Sud : violet
+            - Ouest: bleu
+            - Est: rouge
     """
     def get_color(dir: str) -> str:
         if dir == 'N':
@@ -91,7 +96,6 @@ def display(G: nx.Graph) -> None:
             return 'blue'
         else:
             return 'red'
-
 
     layout = {node: tuple(G.nodes[node]['pos']) for node in G.nodes}
 
@@ -108,14 +112,12 @@ if __name__ == '__main__':
 
     parser.add_argument('-n', '--nodes', help='number of nodes (default=10)', type=int, default=10)
     parser.add_argument('-d', '--density', help='density of the graph (default=0.15)', type=float, default=0.15)
-    parser.add_argument('-m', '--min', help='node attribute minimum value (default=0.0)', type=float, default=0.0)
-    parser.add_argument('-M', '--max', help='node attribute maximum value (default=1.0)', type=float, default=1.0)
     parser.add_argument('-i', '--image', help='show graph', action='store_true')
     parser.add_argument('-s', '--save', help='save graph to disk', action='store_true')
 
     p = parser.parse_args()
 
-    G = gen(p.nodes, p.density, p.min, p.max)
+    G = gen(p.nodes, p.density)
     
     if p.save:
         save(G, f'G_n{p.nodes}_d{p.density}_{datetime.now().strftime("%d%f")}.json')
