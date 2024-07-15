@@ -40,13 +40,13 @@ def gen(nb_nodes: int) -> nx.DiGraph:
     G = nx.complete_graph(range(nb_nodes), nx.DiGraph())
 
     for node in G.nodes:
-        G.nodes[node]['pos'] = np.random.uniform(0.0, 1.0, 2).tolist()
+        G.nodes[node]['y'] = np.random.uniform(0.0, 1.0, 2).tolist()
 
     for edge in G.edges():
         dir = 'N/A'
         src, dest = edge
-        p1 = G.nodes[src]['pos']
-        p2 = G.nodes[dest]['pos']
+        p1 = G.nodes[src]['y']
+        p2 = G.nodes[dest]['y']
 
         dx = p2[0] - p1[0]
         dy = p2[1] - p1[1]
@@ -76,15 +76,18 @@ def degrade(G: nx.Graph, density: float, relpos: float, unknown: float) -> nx.Di
         int(nx.number_of_edges(G) * relpos)
     )
     for edge in edges_tbr:
-        G.edges[edge]['dir'] = 'N/A'
+        G.edges[edge]['dir'] = 'N/A'  # replaced value
 
     # Remove node position attribute.
     nodes_tbr = random.sample(
         tuple(G.nodes()),
         int(nx.number_of_nodes(G) * unknown)
     )
-    for node in nodes_tbr:
-        G.nodes[node]['pos'] = list()
+    for node in G.nodes():
+        if node in nodes_tbr:
+            G.nodes[node]['pos'] = [np.NaN, np.NaN]  # replaced value
+        else:
+            G.nodes[node]['pos'] = G.nodes[node]['y']
     
     return G
 
